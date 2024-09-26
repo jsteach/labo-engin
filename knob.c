@@ -71,8 +71,12 @@ defer:
     knob_cmd_free(cmd);
     return result;
 }
-
-#define LAB_NAME "entrypoint"
+#define LABO_2
+#ifdef LABO_1
+#define LAB_NAME "labo1"
+#elif defined(LABO_2)
+#define LAB_NAME "labo2"
+#endif
 bool build_game(void)
 {
     bool result = true;
@@ -92,6 +96,9 @@ bool build_game(void)
     build_raylib(&cmd);
     knob_cmd_append(&cmd,knob_temp_sprintf("./src/%s.cpp",LAB_NAME),"-o","./Deployment/game.exe");
     knob_cmd_append(&cmd, "-lkernel32","-lwinmm", "-lgdi32","-lopengl32");
+    #ifdef LABO_1
+    knob_cmd_append(&cmd, "-Wl,--subsystem,windows");
+    #endif
     knob_cmd_append(&cmd,"./src/main.cpp");
     if (!knob_cmd_run_sync(cmd)) knob_return_defer(false);
     
