@@ -1,4 +1,5 @@
 #include "entrypoint.h"
+#define SUPPORT_FILEFORMAT_MP3
 #include "raylib.h"
 
 #include <stdio.h>
@@ -42,13 +43,17 @@ void raylib_start(void){
     #endif
     SetTraceLogCallback(CustomLog);
     InitWindow(640,480,"Labo: Services");
-    TraceLog(LOG_INFO,"Window opened; width: %d height: %d",640,480);
-    TraceLog(LOG_INFO,"Engine intiliazed successfully");
+    InitAudioDevice(); 
     SetTargetFPS(60);
-
+    Music m = LoadMusicStream("assets/music.mp3");
+    Texture tex = LoadTexture("assets/image.png");
+    Sound snd = LoadSound("assets/soundfx.mp3");
+    PlayMusicStream(m);
     while(!WindowShouldClose()){
         static float pos[4] = {0,0,100,100};
         float dt = GetFrameTime();
+
+        UpdateMusicStream(m); 
 
         if(IsKeyDown(KEY_A)){
             pos[0] -= 100 *dt;
@@ -66,10 +71,16 @@ void raylib_start(void){
             pos[1] += 100 *dt;
             TraceLog(LOG_INFO,"Stay down....");
         }
+        if(IsKeyDown(KEY_SPACE)){
+            PlaySound(snd);
+        }
 
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawRectangle(pos[0],pos[1],pos[2],pos[3],RED);
+        Rectangle src = {0,0,(float)tex.width,(float)tex.height};
+        Rectangle dst = {pos[0],pos[1],100,100};
+        DrawTexturePro(tex,src,dst,CLITERAL(Vector2){0},0,WHITE);
+        DrawText("Press space for sound fx !",0,0,24,RED);
         EndDrawing();
     }
     #ifdef NDEBUG_MODE

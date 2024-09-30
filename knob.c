@@ -23,6 +23,15 @@ static const char *raylib_modules[] = {
 #define LIB_EXT ".a"
 #endif
 
+#define LABO_3
+#ifdef LABO_1
+#define LAB_NAME "labo1"
+#elif defined(LABO_2)
+#define LAB_NAME "labo2"
+#elif defined(LABO_3)
+#define LAB_NAME "labo3"
+#endif
+
 bool build_raylib(Knob_Cmd* end_cmd)
 {
     bool result = true;
@@ -50,7 +59,10 @@ bool build_raylib(Knob_Cmd* end_cmd)
         if (knob_needs_rebuild(output_path, &input_path, 1)) {
             cmd.count = 0;
             knob_cmd_append(&cmd, ZIG_PATH,"cc");
-            knob_cmd_append(&cmd, "--debug", "-std=c11", "-fno-sanitize=undefined","-fno-omit-frame-pointer");
+            #ifdef LABO_2
+            knob_cmd_append(&cmd,"-DNDEBUG_MODE");
+            #endif
+            knob_cmd_append(&cmd,"--debug","-std=c11", "-fno-sanitize=undefined","-fno-omit-frame-pointer");
             knob_cmd_append(&cmd, "-target");
             knob_cmd_append(&cmd, "x86_64-windows");
             knob_cmd_append(&cmd, "-DPLATFORM_DESKTOP","-fPIC");
@@ -71,12 +83,7 @@ defer:
     knob_cmd_free(cmd);
     return result;
 }
-#define LABO_2
-#ifdef LABO_1
-#define LAB_NAME "labo1"
-#elif defined(LABO_2)
-#define LAB_NAME "labo2"
-#endif
+
 bool build_game(void)
 {
     bool result = true;
@@ -91,12 +98,15 @@ bool build_game(void)
     }
     knob_cmd_append(&cmd, ZIG_PATH,"c++");
     knob_cmd_append(&cmd, "-static");
-    knob_cmd_append(&cmd, "--debug", "-std=c++11", "-fno-sanitize=undefined","-fno-omit-frame-pointer");
+    #ifdef LABO_2
+    knob_cmd_append(&cmd,"-DNDEBUG_MODE");
+    #endif
+    knob_cmd_append(&cmd,"--debug","-std=c++11", "-fno-sanitize=undefined","-fno-omit-frame-pointer");
     knob_cmd_append(&cmd, "-I"RAYLIB_PATH"/src");
     build_raylib(&cmd);
     knob_cmd_append(&cmd,knob_temp_sprintf("./src/%s.cpp",LAB_NAME),"-o","./Deployment/game.exe");
     knob_cmd_append(&cmd, "-lkernel32","-lwinmm", "-lgdi32","-lopengl32");
-    #ifdef LABO_1
+    #if defined(LABO_1) || defined(LABO_2)
     knob_cmd_append(&cmd, "-Wl,--subsystem,windows");
     #endif
     knob_cmd_append(&cmd,"./src/main.cpp");
